@@ -1,0 +1,31 @@
+#!/bin/bash
+
+output="$(git status --porcelain --branch)"
+lvl=$?
+echo "$output"
+echo
+if [ $lvl -ne 0 ]; then
+	echo git qstat [failed]
+	exit $lvl
+fi
+if ( echo "$output" | grep -E "^ ?[ADM]" ); then
+	state="modified"
+fi
+if ( echo "$output" | grep -E "^ ?[?]" ); then
+	state="$state,untracked"
+fi
+if [ "$state" = "" ]; then
+	state=clean
+fi
+if [ "$( echo "$state" | cut -c 1 )" = "," ]; then
+	state="$( echo "$state" | cut -c 2-)"
+fi
+
+branchcontent="$( echo "$output" | grep -E "^##" )"
+branchstate="$(echo "$branchcontent" | cut -d "[" -f 2 | cut -d "]" -f 1)"
+if [ "$branchstate" != "$branchcontent" ]; then
+	state="$state,$branchstate"
+fi
+
+echo git qstat [$state]
+
