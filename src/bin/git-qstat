@@ -1,31 +1,51 @@
 #!/bin/bash
 
+. need-some-init
+
+init_extended_status
+
 output="$(git status --porcelain --branch)"
 lvl=$?
-echo "$output"
-echo
+echo "$output" >&3
+
 if [ $lvl -ne 0 ]; then
-	echo git qstat [failed]
-	exit $lvl
-fi
-if ( echo "$output" | grep -E "^ ?[ADM]" ); then
-	state="modified"
-fi
-if ( echo "$output" | grep -E "^ ?[?]" ); then
-	state="$state,untracked"
-fi
-if [ "$state" = "" ]; then
-	state=clean
-fi
-if [ "$( echo "$state" | cut -c 1 )" = "," ]; then
-	state="$( echo "$state" | cut -c 2-)"
+	set_extended_status ERROR
+else
+	branch="$(LANG= git branch | grep -e "^ *" | cut -c 3-)"
+	level="OK"
+	if ( echo "$output" | grep -E "^ ?[ADM]" >/dev/null ); then
+		state="modified"
+		level="WARN"
+		lvl=3
+	fi
+	if ( echo "$output" | grep -E "^ ?[?]" >/dev/null ); then
+		state="$state,untracked"
+		level="WARN"
+		lvl=3
+	fi
+	if [ "$state" = "" ]; then
+		state=clean
+	fi
+	if [ "$( echo "$state" | cut -c 1 )" = "," ]; then
+		state="$( echo "$state" | cut -c 2-)"
+	fi
+
+	branchcontent="$( echo "$output" | grep -E "^##" )"
+	branchstate="$(echo "$branchcontent" | cut -d "[" -f 2 | cut -d "]" -f 1)"
+	if [ "$branchstate" != "$branchcontent" ]; then
+		state="$state,$branchstate"
+		if ( echo "$output" | grep -F "ahead" >/dev/null ); then
+			if [ "$level" = "OK" ]; then
+				level=INFO
+			fi
+		fi
+
+	fi
+
+	set_extended_status "$level" "$state" "$branch"
 fi
 
-branchcontent="$( echo "$output" | grep -E "^##" )"
-branchstate="$(echo "$branchcontent" | cut -d "[" -f 2 | cut -d "]" -f 1)"
-if [ "$branchstate" != "$branchcontent" ]; then
-	state="$state,$branchstate"
-fi
+close_extended_status
 
-echo git qstat [$state]
+exit $lvl
 

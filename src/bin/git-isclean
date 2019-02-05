@@ -1,0 +1,31 @@
+#!/bin/bash
+
+output="$(git status --porcelain --branch)"
+lvl=$?
+if [ $lvl -ne 0 ]; then
+	echo git isclean [failed]
+	exit $lvl
+fi
+if ( echo "$output" | grep -E "^ ?[ADM]" > /dev/null ); then
+	state="modified"
+fi
+if ( echo "$output" | grep -E "^ ?[?]" > /dev/null ); then
+	state="$state,untracked"
+fi
+
+branchcontent="$( echo "$output" | grep -E "^##" )"
+if ( echo "$branchcontent" | grep -E '\[.*ahead.*\]' > /dev/null ); then
+	state="$state,ahead"
+fi
+
+if [ "$( echo "$state" | cut -c 1 )" = "," ]; then
+	state="$( echo "$state" | cut -c 2-)"
+fi
+
+if [ ! -z "$state" ]; then
+	echo git isclean [$state]
+	exit 9
+else
+	echo git isclean [ok]
+fi
+

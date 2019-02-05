@@ -1,59 +1,39 @@
 #!/bin/bash
 
-lvl=0
+returncode=0
 
 if [ -e .git ]; then
 	git "$@"
-	lvl=$?
+	returncode=$?
 else
 	resultText=
 	gitdirs="$(echo */.git)"
 	if [ "${gitdirs}" = "*/.git" ]; then
 		echo "no .git in $PWD or direct subdirs"
-		lvl=3
+		returncode=3
 	else
+		. need-some-init
+
 		for dg in */.git; do
 			export d="$(dirname "$dg")"
-			echo $d
 			statusText=
 			if [ ! -d "$d" ]; then
-				echo "$d" is no directory
-				lvl=3
-				statusText=missing
+				call_extended_status "$d" cd "$d"
+				returncode=3
 			else
-				exec 5>&1
-				output="$(
-					set -e
-					cd "$d"
-					git "$@" | tee >(cat - >&5)
-					exit ${PIPESTATUS[0]}
-				)"
-				lvll=$?
-				lastLine=$(echo "$output" | tail -n 1)
-				statusText="$(echo "$lastLine" | cut -d "[" -f 2 | cut -d "]" -f 1)"
-				if [ "$statusText" = "$lastLine" ]; then
-					statusText=
+				pdir="$PWD"
+				cd "$d"
+				call_extended_status "$d" git extendedstatus "$@"
+				llvl=$?
+				if [ $llvl -ne 0 ]; then
+					returncode=$llvl
 				fi
-				if [ $lvl -eq 0 ]; then
-					lvl=$lvll
-					if [ "$statusText" = "" ]; then
-						statusText=ok
-					fi
-				elif [ "$statusText" = "" ]; then
-					statusText=failed
-				fi
+				cd "$pdir"
 			fi
-			resultText="$resultText
-$d $statusText"
-			echo
 		done
 	fi
-	echo "$resultText"
+	report_extended_status
 fi
 
-if [ $lvl -eq 0 ]; then
-	echo "git all [ok]"
-else
-	echo "git all [failed]"
-fi
+exit $returncode
 
