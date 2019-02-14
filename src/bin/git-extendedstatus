@@ -7,6 +7,10 @@ init_extended_status
 if [ "$1" = "qstat" -o "$1" = "extendedstatus" ]; then
 	_debug "extended status for git $1"
 	call_extended_status --keep "git $1" git "$@"
+elif ( which "git-extendedstatus-$1" ); then
+	cmd="$1"
+	shift
+	call_extended_status --keep "git $cmd" git extendedstatus-"$cmd" "$@"
 else
 	_debug "wrapped status for git $1"
 	call_extended_status --keep --wrap "git $1" git "$@"

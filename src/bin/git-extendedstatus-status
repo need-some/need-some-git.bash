@@ -1,0 +1,8 @@
+#!/bin/bash
+
+
+
+git status >&3
+
+git qstat
+
