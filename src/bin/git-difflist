@@ -1,0 +1,5 @@
+#!/bin/bash
+
+git diff "$@" | grep -E "^[+-]" | grep -F $'+++ a/\n--- a/\n+++ b/\n---b/' | cut -c 7- | sort | uniq
+
+
