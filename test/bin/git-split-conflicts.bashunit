@@ -1,0 +1,41 @@
+#!/usr/bin/env bashunit
+
+testSplitConflict() {
+	mock-origpath mkdir
+	mock-origpath rm
+	mock-origpath cp
+
+	@parameters empty
+	@parameters noconflict
+	@parameters conflict
+
+	@testName split conflicts $1
+
+	testin="$TEMPDIR/tmp/git-split-conflicts.test.${1}"
+	testsrc="$NEEDSOME_TEST_TESTCASE_DIR/git-split-conflicts.test.${1}"
+
+	if [ -e "$TEMPDIR/tmp" ]; then
+		rm -r "$TEMPDIR/tmp"
+	fi
+	mkdir "$TEMPDIR/tmp"
+	cp "$testsrc" "$TEMPDIR/tmp/"
+	"$NEEDSOME_TESTEE" "$testin"
+
+	if [ -e "$testsrc.left" ]; then
+		expectedLeft="$(< "$testsrc.left" )"
+	else
+		expectedLeft="$(< "$testsrc" )"
+	fi
+	if [ -e "$testsrc.right" ]; then
+		expectedRight="$(< "$testsrc.right" )"
+	else
+		expectedRight="$(< "$testsrc" )"
+	fi
+	resultLeft="$(< "$testin.left" )"
+	resultRight="$(< "$testin.right" )"
+
+	assert "left equal" "$expectedLeft" = "$resultLeft"
+	assert "right equal" "$expectedRight" = "$resultRight"
+	
+}
+

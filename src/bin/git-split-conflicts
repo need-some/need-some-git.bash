@@ -1,0 +1,5 @@
+#/bin/bash
+
+cat "$1" | awk "BEGIN {pri=1;pril=1} /======/ {pri=1;pril=0} />>>>>>/ {pril=0} /<<<<<</ {pri=0} {if (pri==1 && pril==1) {print} pril=1}" > "$1.right"
+cat "$1" | awk "BEGIN {pri=1;pril=1} /======/ {pri=0} />>>>>>/ {pri=1;pril=0} /<<<<<</ {pril=0} {if (pri==1 && pril==1) {print} pril=1}" > "$1.left"
+

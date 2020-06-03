@@ -1,0 +1,29 @@
+a file
+with
+a
+<<<<<<< HEAD
+mini change here
+and a
+mini change there
+=======
+change here, this is the change
+and a
+>>>>>>> tb2
+and
+some
+identical space
+and
+more
+and more
+and
+<<<<<<< HEAD
+an unnecessary
+long long long
+change
+=======
+a multiline
+very long
+important change
+>>>>>>> tb2
+of things
+
