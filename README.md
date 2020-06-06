@@ -8,7 +8,7 @@ _need-some_ is a collection of small yet useful functions.
 The git package provides enhanced commands to use with git on the command line
 
 ## Installation
-See the Installation in [https://github.com/need-some/need-some-init.bash](need-some-init.bash)
+See the Installation in [need-some-init.bash](https://github.com/need-some/need-some-init.bash "need-some-init.bash")
 
 ## Syntax
 
