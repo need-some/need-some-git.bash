@@ -11,7 +11,7 @@ echo "$output" >&3
 if [ $lvl -ne 0 ]; then
 	set_extended_status ERROR
 else
-	branch="$(LANG= git branch | grep -e "^ *" | cut -c 3-)"
+	branch="$(LANG= git branch | grep -e '^\* ' | cut -c 3-)"
 	level="OK"
 	if ( echo "$output" | grep -E "^ ?[ADM]" >/dev/null ); then
 		state="modified"
